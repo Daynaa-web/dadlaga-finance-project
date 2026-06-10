@@ -3,26 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Санхүүгийн самбар</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" 
-       rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" 
-       crossorigin="anonymous">
-        <link rel="stylesheet" href="css/style.css">
+          rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" 
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="roboto-regular">
     <nav class="navbar navbar-dark bg-dark shadow-sm mb-4">
         <div class="container-fluid px-4">
             <a class="navbar-brand fw-bold" href="#">
-                <i class="fa-solid fa-sack-dollar text-warning"></i>Санхүүгийн самбар
+                <i class="fa-solid fa-sack-dollar text-warning"></i> Санхүүгийн самбар
             </a>
             <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-sm btn-outline-primary fw-bold text-white border-primary-subtle" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasBudget">Төсөв тогтоох</button>
+
                 <span class="text-light small" id="user-email">...</span>
                 <button class="btn btn-outline-light btn-sm" id="btn-logout">
-                    <i class="bi bi-box-arrow-right"></i>Гарах
+                    <i class="bi bi-box-arrow-right"></i> Гарах
                 </button>
             </div>
         </div>
     </nav>
+
     <div class="container-fluid px-4">
         <div class="row g-3 mb-4">
             <div class="col-md-4">
@@ -59,22 +62,22 @@
                     <form id="transaction-form">
                         <div class="mb-3">
                             <label class="form-label small fw-medium text-secondary">Гүйлгээний төрөл</label>
-                        <select class="form-select shadow-sm" id="tx-type" required>
-                            <option value="income">Орлого</option>
-                            <option value="expense">Зарлага</option>
-                        </select>
+                            <select class="form-select shadow-sm" id="tx-type" required>
+                                <option value="income">Орлого</option>
+                                <option value="expense">Зарлага</option>
+                            </select>
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label small fw-medium text-secondary">Ангилал</label>
-                        <select class="form-select shadow-sm" id="tx-category" required>
-                            <option value="Хүнс">Хоол хүнс</option>
-                            <option value="Цалин">Цалин орлого</option>
-                            <option value="Тээвэр">Унаа, тээвэр</option>
-                            <option value="Орон байр">Байр, цахилгаан</option>
-                            <option value="Үзвэр үйлчилгээ">Чөлөөт цаг, худалдан авалт</option>
-                            <option value="Бусад">Бусад</option>
-                        </select>
+                            <select class="form-select shadow-sm" id="tx-category" required>
+                                <option value="Хүнс">Хоол хүнс</option>
+                                <option value="Цалин">Цалин орлого</option>
+                                <option value="Тээвэр">Унаа, тээвэр</option>
+                                <option value="Орон байр">Байр, цахилгаан</option>
+                                <option value="Үзвэр үйлчилгээ">Чөлөөт цаг, худалдан авалт</option>
+                                <option value="Бусад">Бусад</option>
+                            </select>
                         </div>
                         
                         <div class="mb-3">
@@ -84,6 +87,7 @@
                                 <span class="input-group-text fw-bold">₮</span>
                             </div>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label small fw-medium text-secondary">Гүйлгээний огноо</label>
                             <input type="date" class="form-control shadow-sm" id="tx-date" required>
@@ -91,8 +95,9 @@
 
                         <div class="mb-3">
                             <label class="form-label small fw-medium text-secondary">Тайлбар</label>
-                        <input type="text" class="form-control shadow-sm" id="tx-desc" placeholder="Жишээ: И-март орсон, Бонус авсан..." required>
+                            <input type="text" class="form-control shadow-sm" id="tx-desc" placeholder="Жишээ: И-март орсон, Бонус авсан..." required>
                         </div>
+
                         <button type="submit" class="btn btn-dark w-100 shadow-sm py-2">
                             <i class="fa-solid fa-circle-plus me-1"></i>Гүйлгээ нэмэх
                         </button>
@@ -100,34 +105,87 @@
                 </div>
             </div>
             
-<div class="col-lg-8">
-    <div class="card border-0 shadow-sm p-4">
-        <h5>Гүйлгээний түүх</h5>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Огноо</th>
-                        <th>Тайлбар</th>
-                        <th>Төрөл</th>
-                        <th class="text-end">Дүн</th>
-                        <th class="text-center">Үйлдэл</th>
-
-                    </tr>
-                </thead>
-
-                <tbody id="transaction-list">
-                    <tr>
-                        <td colspan="5">Одоогоор гүйлгээ бүртгэгдээгүй байна.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm p-4">
+                    <h5 class="fw-bold mb-3">Гүйлгээний түүх</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle custom-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 18%;">Огноо</th>
+                                    <th style="width: 15%;">Ангилал</th>
+                                    <th style="width: 32%;">Тайлбар</th>
+                                    <th style="width: 15%;">Төрөл</th>
+                                    <th style="width: 15%;" class="text-end">Дүн</th>
+                                    <th style="width: 5%;" class="text-center">Үйлдэл</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-list">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">Уншиж байна...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-    
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasBudget" aria-labelledby="offcanvasBudgetLabel">    
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title fw-bold" id="offcanvasBudgetLabel">
+                <i class="fa-solid fa-bullseye me-2"></i>Сар бүрийн төсөв тогтоох
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+
+        <div class="offcanvas-body p-4">
+            <p class="text-secondary small mb-4">
+                Та тухайн сард тодорхой ангилалд зарцуулах мөнгөний дээд хязгаарыг тогтоосноор санхүүгээ хэтрэхээс хамгаалж чадна.
+            </p>
+
+            <form id="budget-form">
+                <div class="mb-3">
+                    <label class="form-label small fw-medium text-secondary">Ангилал сонгох</label>
+                    <select class="form-select shadow-sm" id="budget-category" required>
+                        <option value="Хүнс">Хоол хүнс</option>
+                        <option value="Тээвэр">Унаа, тээвэр</option>
+                        <option value="Орон байр">Байр, цахилгаан</option>
+                        <option value="Үзвэр үйлчилгээ">Чөлөөт цаг, худалдан авалт</option>
+                        <option value="Бусад">Бусад</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-medium text-secondary">Төсвийн хязгаар (₮)</label>
+                    <div class="input-group shadow-sm">
+                        <input type="number" class="form-control fs-5 fw-bold" id="budget-amount" placeholder="0" min="1" required>
+                        <span class="input-group-text fw-bold">₮</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-medium text-secondary">Аль сард зориулж</label>
+                    <input type="month" class="form-control shadow-sm" id="budget-month" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 shadow-sm py-2 fw-bold">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Төсөв батлах
+                </button>
+            </form>
+            
+            <hr class="my-4 text-secondary">
+
+            <div id="current-budgets-list">
+                <h6 class="fw-bold text-dark mb-3">Одоогийн тогтоосон төсвүүд:</h6>
+                <div class="text-center py-3 text-muted small bg-light rounded">
+                    Одоогоор төсөв тогтоогоогүй байна.
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/e79e38ced0.js" crossorigin="anonymous"></script>
     <script type="module" src="js/dashboard.js"></script>
