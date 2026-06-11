@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
+    console.log("Холбогдсон байна.");
     const userEmailElem = document.getElementById('user-email');
     if (userEmailElem) {
         userEmailElem.textContent = user.email;
@@ -363,114 +364,144 @@ if (btnLogout) {
 
 // 1. Хэрэглэгчийн авсан тэмдгүүдийг баазаас уншиж зурах + Цол бодох
 async function fetchAndRenderBadges() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) return;
 
-    const { data: badges, error } = await supabase
-        .from('badges')
-        .select('badge_name')
-        .eq('user_id', user.id);
+        // Зөвхөн цэвэрхэн текстээр баганыг дуудна
+        const { data: badges, error } = await supabase
+            .from('badges')
+            .select('badge_name')
+            .eq('user_id', user.id);
 
-    if (error) {
-        console.error("Badge уншихад алдаа гарлаа:", error.message);
-        return;
-    }
+        if (error) {
+            console.error("Badge уншихад алдаа гарлаа:", error.message);
+            return;
+        }
 
-    const badgesContainer = document.getElementById('user-badges');
-    if (!badgesContainer) return;
+        const badgesContainer = document.getElementById('user-badges');
+        if (!badgesContainer) return;
 
-    let htmlContent = '';
-    badges.forEach(b => {
-        let badgeColor = 'bg-secondary';
-        let icon = '🏅';
-        
-        if (b.badge_name === 'Анхны алхам') { badgeColor = 'bg-warning text-dark'; icon = '🚀'; }
-        if (b.badge_name === 'Төсөвлөгч') { badgeColor = 'bg-info text-dark'; icon = '🎯'; }
-        if (b.badge_name === 'Хэмнэгч') { badgeColor = 'bg-success'; icon = '🛡️'; }
+        let htmlContent = '';
+        badges.forEach(b => {
+            let badgeColor = 'bg-secondary';
+            let icon = '🏅';
+            
+            if (b.badge_name === 'Анхны алхам') { badgeColor = 'bg-warning text-dark'; icon = '🚀'; }
+            if (b.badge_name === 'Төсөвлөгч') { badgeColor = 'bg-info text-dark'; icon = '🎯'; }
+            if (b.badge_name === 'Хэмнэгч') { badgeColor = 'bg-success'; icon = '🛡️'; }
 
-        htmlContent += `<span class="badge ${badgeColor} d-flex align-items-center gap-1 shadow-sm" title="${b.badge_name}">${icon} ${b.badge_name}</span>`;
-    });
-    badgesContainer.innerHTML = htmlContent;
-
-    // 🏆 ЦОЛ, БОНУС, ХӨНГӨЛӨЛТ БОДОХ ЛОГИК
-    const badgeCount = badges.length; 
-    let currentRankKey = 0;
-
-    if (badgeCount >= 3) currentRankKey = 3;
-    else if (badgeCount === 2) currentRankKey = 2;
-    else if (badgeCount === 1) currentRankKey = 1;
-
-    const currentRank = RANK_RULES[currentRankKey];
-
-    const rankElem = document.getElementById('user-rank');
-    const bonusElem = document.getElementById('user-bonus');
-    const discountsContainer = document.getElementById('user-discounts');
-
-    if (rankElem) rankElem.textContent = `👑 ${currentRank.title}`;
-    if (bonusElem) bonusElem.textContent = `${currentRank.bonus.toLocaleString()} Оноо`;
-
-    if (discountsContainer) {
-        let discountsHtml = '';
-        currentRank.perks.forEach(perk => {
-            discountsHtml += `<span class="badge bg-white text-dark border border-danger-subtle px-2 py-1.5 shadow-sm small fw-medium"><i class="fa-solid fa-gift text-danger me-1"></i>${perk}</span>`;
+            htmlContent += `<span class="badge ${badgeColor} d-flex align-items-center gap-1 shadow-sm" title="${b.badge_name}">${icon} ${b.badge_name}</span>`;
         });
-        discountsContainer.innerHTML = discountsHtml;
+        badgesContainer.innerHTML = htmlContent;
+
+        // 🏆 ЦОЛ, БОНУС, ХӨНГӨЛӨЛТ БОДОХ ЛОГИК
+        const badgeCount = badges.length; 
+        let currentRankKey = 0;
+
+        if (badgeCount >= 3) currentRankKey = 3;
+        else if (badgeCount === 2) currentRankKey = 2;
+        else if (badgeCount === 1) currentRankKey = 1;
+
+        const currentRank = RANK_RULES[currentRankKey];
+
+        const rankElem = document.getElementById('user-rank');
+        const bonusElem = document.getElementById('user-bonus');
+        const discountsContainer = document.getElementById('user-discounts');
+
+        if (rankElem) rankElem.textContent = `👑 ${currentRank.title}`;
+        if (bonusElem) bonusElem.textContent = `${currentRank.bonus.toLocaleString()} Оноо`;
+
+        if (discountsContainer) {
+            let discountsHtml = '';
+            currentRank.perks.forEach(perk => {
+                discountsHtml += `<span class="badge bg-white text-dark border border-danger-subtle px-2 py-1.5 shadow-sm small fw-medium"><i class="fa-solid fa-gift text-danger me-1"></i>${perk}</span>`;
+            });
+            discountsContainer.innerHTML = discountsHtml;
+        }
+    } catch (err) {
+        console.error("fetchAndRenderBadges системд алдаа гарлаа:", err);
     }
 }
 
 // 2. Шинэ тэмдэг бааз руу нэмэх
 async function awardBadge(badgeName) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) return;
 
-    const { data: existingBadge } = await supabase
-        .from('badges')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('badge_name', badgeName)
-        .maybeSingle();
-
-    if (!existingBadge) {
-        const { error } = await supabase
+        // Зөрчил үүсгэхгүйгээр тухайн тэмдэг байгаа эсэхийг уншина
+        const { data: existingBadges, error: checkError } = await supabase
             .from('badges')
-            .insert([{ user_id: user.id, badge_name: badgeName }]);
-        
-        if (!error) {
-            alert(`🎉 Баяр хүргэе! Та шинэ урамшууллын тэмдэг авлаа: "${badgeName}"`);
-            await fetchAndRenderBadges();
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('badge_name', badgeName);
+
+        if (checkError) {
+            console.error("Тэмдэг шалгахад алдаа гарлаа:", checkError.message);
+            return;
         }
+
+        // Хэрэв баазад байхгүй бол шинээр оруулна
+        if (!existingBadges || existingBadges.length === 0) {
+            const { error: insertError } = await supabase
+                .from('badges')
+                .insert([
+                    { 
+                        user_id: user.id, 
+                        badge_name: badgeName 
+                    }
+                ]);
+            
+            if (insertError) {
+                console.error("Бааз руу тэмдэг хадгалахад алдаа гарлаа:", insertError.message);
+            } else {
+                alert(`🎉 Баяр хүргэе! Та шинэ урамшууллын тэмдэг авлаа: "${badgeName}"`);
+                await fetchAndRenderBadges();
+            }
+        }
+    } catch (err) {
+        console.error("awardBadge системд алдаа гарлаа:", err);
     }
 }
 
 // 3. Зарлага хийх үед төсөв хэтрээгүй бол "Хэмнэгч" тэмдэг олгох шалгуур
 async function checkSaverBadge(user, currentMonthYear) {
-    const { data: budgets } = await supabase
-        .from('budgets')
-        .select('limit_amount')
-        .eq('user_id', user.id)
-        .eq('month_year', currentMonthYear);
+    try {
+        const { data: budgets, error: budgetError } = await supabase
+            .from('budgets')
+            .select('limit_amount')
+            .eq('user_id', user.id)
+            .eq('month_year', currentMonthYear);
 
-    let totalBudgetLimit = 0;
-    if (budgets) budgets.forEach(b => totalBudgetLimit += b.limit_amount);
+        if (budgetError) return;
 
-    if (totalBudgetLimit === 0) return; 
+        let totalBudgetLimit = 0;
+        if (budgets) budgets.forEach(b => totalBudgetLimit += b.limit_amount);
 
-    const { data: transactions } = await supabase
-        .from('transactions')
-        .select('amount, date, type')
-        .eq('user_id', user.id)
-        .eq('type', 'expense');
+        if (totalBudgetLimit === 0) return; 
 
-    let totalExpense = 0;
-    if (transactions) {
-        transactions.forEach(tx => {
-            if (tx.date && tx.date.substring(0, 7) === currentMonthYear) {
-                totalExpense += tx.amount;
-            }
-        });
-    }
+        const { data: transactions, error: txError } = await supabase
+            .from('transactions')
+            .select('amount, date, type')
+            .eq('user_id', user.id)
+            .eq('type', 'expense');
 
-    if (totalExpense > 0 && totalExpense <= totalBudgetLimit) {
-        await awardBadge('Хэмнэгч');
+        if (txError) return;
+
+        let totalExpense = 0;
+        if (transactions) {
+            transactions.forEach(tx => {
+                if (tx.date && tx.date.substring(0, 7) === currentMonthYear) {
+                    totalExpense += tx.amount;
+                }
+            });
+        }
+
+        if (totalExpense > 0 && totalExpense <= totalBudgetLimit) {
+            await awardBadge('Хэмнэгч');
+        }
+    } catch (err) {
+        console.error("checkSaverBadge системд алдаа гарлаа:", err);
     }
 }
