@@ -1,4 +1,4 @@
-import { supabase } from './supabase.js';
+import { supabase } from '/supabase.js';
 
 // HTML Элементүүдийг барьж авах
 const transactionForm = document.getElementById('transaction-form');
@@ -343,13 +343,16 @@ if (budgetForm) {
 }
 
 // Гарах товч
+// Гарах товч
 if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
         const confirmLogout = confirm("Та системээс гарахдаа итгэлтэй байна уу?");
         if (!confirmLogout) return;
 
         try {
-            const { error } = await supabase.signOut();
+            // ЭНД ЗАСВАР ОРУУЛСАН: supabase.signOut() -> supabase.auth.signOut()
+            const { error } = await supabase.auth.signOut();
+            
             if (error) throw error;
             window.location.href = 'index.html';
         } catch (error) {
@@ -458,7 +461,7 @@ async function awardBadge(badgeName) {
             if (insertError) {
                 console.error("Бааз руу тэмдэг хадгалахад алдаа гарлаа:", insertError.message);
             } else {
-                alert(`🎉 Congratulations! You've earned a new badge: "${badgeName}"`);
+                alert(` Congratulations! You've earned a new badge: "${badgeName}"`);
                 await fetchAndRenderBadges();
             }
         }
