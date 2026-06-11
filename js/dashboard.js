@@ -14,9 +14,32 @@ const budgetCategoryInput = document.getElementById('budget-category');
 const budgetAmountInput = document.getElementById('budget-amount');
 const budgetMonthInput = document.getElementById('budget-month');
 
+// 🏆 Цол, Бонус болон Хөнгөлөлтийн системүүдийн үндсэн дүрэм
+const RANK_RULES = {
+    0: {
+        title: "🌱 Анхан суралцагч",
+        bonus: 0,
+        perks: ["Гүйлгээ тогтмол хөтөлж цолоо ахиулаарай."]
+    },
+    1: {
+        title: "⚡ Санхүүч Хүү",
+        bonus: 500,
+        perks: ["☕ CU кофе 10% хөнгөлөлт", "📚 Интерном 5% хөнгөлөлт"]
+    },
+    2: {
+        title: "🎯 Төсвийн Мастер",
+        bonus: 1500,
+        perks: ["☕ CU кофе 20% хөнгөлөлт", "🛒 И-Март 5,000 ₮ купон", "🍿 Тэнгис кино театр 15%"]
+    },
+    3: {
+        title: "👑 Санхүүгийн Эрх Чөлөө",
+        bonus: 5000,
+        perks: ["🌟 Бүх түншүүдэд VIP 15% хөнгөлөлт", "🏦 ХасБанк дансны хураамж 0 ₮"]
+    }
+};
+
 // Хуудас ачаалагдаж дуусах үед ажиллах хэсэг
 document.addEventListener('DOMContentLoaded', async () => {
-    // Хэрэглэгч нэвтэрсэн эсэхийг шалгана
     const { data: { user }, error } = await supabase.auth.getUser();
 
     if (error || !user) {
@@ -24,30 +47,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // Хэрэв нэвтэрсэн бол имэйлийг нь харуулна
     const userEmailElem = document.getElementById('user-email');
     if (userEmailElem) {
         userEmailElem.textContent = user.email;
     }
 
-    // Жагсаалтуудыг баазаас татах
     await fetchTransactions(); 
     await fetchBudgets();
+    await fetchAndRenderBadges(); // 🏅 Тэмдэг болон Цол ачаалах
 });
 
 // Шинэ гүйлгээ нэмэх (Submit)
 if (transactionForm) {
     transactionForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Хуудас дахин ачаалагдахыг зогсооно
+        e.preventDefault();
 
-        // Формоос утгуудыг уншиж авах
         const type = txTypeInput.value;
         const category = txCategoryInput.value;
         const amount = parseFloat(txAmountInput.value);
         const date = txDateInput.value;
         const description = txDescInput.value;
 
-        // Хэрэглэгчийн мэдээллийг авах
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
             alert("Сешн дууссан байна. Дахин нэвтэрнэ үү!");
@@ -56,13 +76,11 @@ if (transactionForm) {
         }
 
         // ========================================================
-        // 🚨 ЧИНИЙ ХҮССЭН: ТӨСӨВ ХЭТЭРСЭН ЭСЭХИЙГ ШАЛГАЖ АСУУХ ЛОГИК
+        // 🚨 ТӨСӨВ ХЭТЭРСЭН ЭСЭХИЙГ ШАЛГАЖ АСУУХ ЛОГИК
         // ========================================================
         if (type === 'expense') {
-            // Огнооноос Жил-Сарыг салгах (Жишээ нь: "2026-06-10" -> "2026-06")
             const currentMonthYear = date.substring(0, 7);
 
-            // 1. Энэ сард, энэ ангилалд тогтоосон төсөв байгаа эсэхийг баазаас хайх
             const { data: budgetData } = await supabase
                 .from('budgets')
                 .select('limit_amount')
@@ -71,11 +89,9 @@ if (transactionForm) {
                 .eq('month_year', currentMonthYear)
                 .maybeSingle(); 
 
-            // Хэрэв төсөв олдвол цааш шалгана
             if (budgetData) {
                 const limitAmount = budgetData.limit_amount;
 
-                // 2. Энэ сард, энэ ангилалд урьд нь хийгдсэн бүх зарлагуудыг татах
                 const { data: pastExpenses } = await supabase
                     .from('transactions')
                     .select('amount, date')
@@ -83,7 +99,6 @@ if (transactionForm) {
                     .eq('type', 'expense')
                     .eq('category', category);
                 
-                // Энэ сард хамаарах зарлагуудын нийлбэрийг олох
                 let totalPastExpense = 0;
                 if (pastExpenses) {
                     pastExpenses.forEach(tx => {
@@ -93,16 +108,13 @@ if (transactionForm) {
                     });
                 }
 
-                // 3. Хуучин зарлагууд дээр ОДООНЫ ШИНЭ зарлагыг нэмээд лимитээс давж байгааг шалгах
                 if (totalPastExpense + amount > limitAmount) {
                     const currentTotal = totalPastExpense + amount;
                     
-                    // Хэрэглэгчээс асуух цонх гаргана
                     const proceed = confirm(
                         `АНХААРУУЛГА!\n\nТаны ${currentMonthYear} сарын "${category}" ангиллын төсвийн хязгаар: ${limitAmount.toLocaleString()} ₮\nОдоогийн нийт зарцуулалт: ${currentTotal.toLocaleString()} ₮ болох гэж байна.\n\nТөсөв хэтрүүлж гүйлгээг үргэлжлүүлэн хадгалах уу?`
                     );
                     
-                    // Хэрэв хэрэглэгч "Цуцлах" (Cancel) дарвал кодыг энд зогсооно! Бааз руу ИНСЕРТ хийхгүй.
                     if (!proceed) {
                         return; 
                     }
@@ -111,7 +123,6 @@ if (transactionForm) {
         }
         // ========================================================
 
-        // Хэрэв төсөв хэтрээгүй, эсвэл хэтэрсэн ч хэрэглэгч "Үргэлжлүүлэх" гэж зөвшөөрсөн бол энд ирж хадгална:
         const { error } = await supabase.from('transactions').insert([
             {
                 user_id: user.id,
@@ -128,9 +139,13 @@ if (transactionForm) {
         } else {
             alert("Гүйлгээ амжилттай бүртгэгдлээ!");
             transactionForm.reset();
+
+            // 🏅 Шалгуурууд хангасан бол автомат тэмдэг олгоно
+            await awardBadge('Анхны алхам'); 
+            const currentMonthYear = date.substring(0, 7);
+            await checkSaverBadge(user, currentMonthYear);
         }
         
-        // Жагсаалтыг шинэчлэх
         await fetchTransactions();
     });
 }
@@ -241,7 +256,7 @@ window.deleteTransaction = async function(id) {
     }
 }
 
-// Төсвүүдийг уншиж Offcanvas дээр жагсаах функц
+// Төсвүүдийг уншиж Offcanvas дээр жагсаах
 async function fetchBudgets() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -321,6 +336,7 @@ if (budgetForm) {
             if (instance) instance.hide();
             
             await fetchBudgets();
+            await awardBadge('Төсөвлөгч'); // 🏅 Анхны төсөв тогтоосон тэмдэг олгох
         }
     });
 }
@@ -339,4 +355,122 @@ if (btnLogout) {
             alert("Системээс гарахад алдаа гарлаа: " + error.message);
         }
     });
+}
+
+// ========================================================
+// 🏅 BADGES & RANKS (ТЭМДЭГ БОЛОН ЦОЛ) СИСТЕМИЙН ФУНКЦҮҮД
+// ========================================================
+
+// 1. Хэрэглэгчийн авсан тэмдгүүдийг баазаас уншиж зурах + Цол бодох
+async function fetchAndRenderBadges() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: badges, error } = await supabase
+        .from('badges')
+        .select('badge_name')
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error("Badge уншихад алдаа гарлаа:", error.message);
+        return;
+    }
+
+    const badgesContainer = document.getElementById('user-badges');
+    if (!badgesContainer) return;
+
+    let htmlContent = '';
+    badges.forEach(b => {
+        let badgeColor = 'bg-secondary';
+        let icon = '🏅';
+        
+        if (b.badge_name === 'Анхны алхам') { badgeColor = 'bg-warning text-dark'; icon = '🚀'; }
+        if (b.badge_name === 'Төсөвлөгч') { badgeColor = 'bg-info text-dark'; icon = '🎯'; }
+        if (b.badge_name === 'Хэмнэгч') { badgeColor = 'bg-success'; icon = '🛡️'; }
+
+        htmlContent += `<span class="badge ${badgeColor} d-flex align-items-center gap-1 shadow-sm" title="${b.badge_name}">${icon} ${b.badge_name}</span>`;
+    });
+    badgesContainer.innerHTML = htmlContent;
+
+    // 🏆 ЦОЛ, БОНУС, ХӨНГӨЛӨЛТ БОДОХ ЛОГИК
+    const badgeCount = badges.length; 
+    let currentRankKey = 0;
+
+    if (badgeCount >= 3) currentRankKey = 3;
+    else if (badgeCount === 2) currentRankKey = 2;
+    else if (badgeCount === 1) currentRankKey = 1;
+
+    const currentRank = RANK_RULES[currentRankKey];
+
+    const rankElem = document.getElementById('user-rank');
+    const bonusElem = document.getElementById('user-bonus');
+    const discountsContainer = document.getElementById('user-discounts');
+
+    if (rankElem) rankElem.textContent = `👑 ${currentRank.title}`;
+    if (bonusElem) bonusElem.textContent = `${currentRank.bonus.toLocaleString()} Оноо`;
+
+    if (discountsContainer) {
+        let discountsHtml = '';
+        currentRank.perks.forEach(perk => {
+            discountsHtml += `<span class="badge bg-white text-dark border border-danger-subtle px-2 py-1.5 shadow-sm small fw-medium"><i class="fa-solid fa-gift text-danger me-1"></i>${perk}</span>`;
+        });
+        discountsContainer.innerHTML = discountsHtml;
+    }
+}
+
+// 2. Шинэ тэмдэг бааз руу нэмэх
+async function awardBadge(badgeName) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: existingBadge } = await supabase
+        .from('badges')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('badge_name', badgeName)
+        .maybeSingle();
+
+    if (!existingBadge) {
+        const { error } = await supabase
+            .from('badges')
+            .insert([{ user_id: user.id, badge_name: badgeName }]);
+        
+        if (!error) {
+            alert(`🎉 Баяр хүргэе! Та шинэ урамшууллын тэмдэг авлаа: "${badgeName}"`);
+            await fetchAndRenderBadges();
+        }
+    }
+}
+
+// 3. Зарлага хийх үед төсөв хэтрээгүй бол "Хэмнэгч" тэмдэг олгох шалгуур
+async function checkSaverBadge(user, currentMonthYear) {
+    const { data: budgets } = await supabase
+        .from('budgets')
+        .select('limit_amount')
+        .eq('user_id', user.id)
+        .eq('month_year', currentMonthYear);
+
+    let totalBudgetLimit = 0;
+    if (budgets) budgets.forEach(b => totalBudgetLimit += b.limit_amount);
+
+    if (totalBudgetLimit === 0) return; 
+
+    const { data: transactions } = await supabase
+        .from('transactions')
+        .select('amount, date, type')
+        .eq('user_id', user.id)
+        .eq('type', 'expense');
+
+    let totalExpense = 0;
+    if (transactions) {
+        transactions.forEach(tx => {
+            if (tx.date && tx.date.substring(0, 7) === currentMonthYear) {
+                totalExpense += tx.amount;
+            }
+        });
+    }
+
+    if (totalExpense > 0 && totalExpense <= totalBudgetLimit) {
+        await awardBadge('Хэмнэгч');
+    }
 }
