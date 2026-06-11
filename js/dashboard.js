@@ -1,4 +1,4 @@
-import { supabase } from '/supabase.js';
+import { supabase } from './supabase.js';
 
 // HTML Элементүүдийг барьж авах
 const transactionForm = document.getElementById('transaction-form');
