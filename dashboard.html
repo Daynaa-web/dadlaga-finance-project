@@ -8,6 +8,24 @@
           rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" 
           crossorigin="anonymous">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /*  Цолны унах цэсийг гоёмсог харагдуулах нэмэлт CSS загвар */
+        .rank-dropdown-menu {
+            min-width: 290px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .rank-dropdown-toggle {
+            cursor: pointer; 
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        .rank-dropdown-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+        }
+    </style>
 </head>
 <body class="roboto-regular">
     <nav class="navbar navbar-dark bg-dark shadow-sm mb-4">
@@ -18,10 +36,42 @@
             <div class="d-flex align-items-center gap-3 flex-wrap">
                 <button class="btn btn-sm btn-outline-primary fw-bold text-white border-primary-subtle" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasBudget">Төсөв тогтоох</button>
 
-                <div class="d-flex align-items-center bg-secondary bg-opacity-25 border border-secondary border-opacity-50 px-3 py-1 rounded gap-3 text-white shadow-sm">
-                    <span id="user-rank" class="fw-bold small">👑 🌱 Анхан суралцагч</span>
-                    <div class="vr bg-secondary"></div>
-                    <span id="user-bonus" class="fw-bold text-warning small">0 Оноо</span>
+                <div class="dropdown">
+                    <div class="d-flex align-items-center bg-secondary bg-opacity-25 border border-secondary border-opacity-50 px-3 py-1 rounded gap-3 text-white shadow-sm rank-dropdown-toggle"
+                         data-bs-toggle="dropdown" 
+                         aria-expanded="false">
+                        <span id="user-rank" class="fw-bold small">Анхан суралцагч</span>
+                        <div class="vr bg-secondary"></div>
+                        <span id="user-bonus" class="fw-bold text-warning small">0 Оноо</span>
+                        <i class="fa-solid fa-chevron-down text-white-50 small ms-1" style="font-size: 10px;"></i>
+                    </div>
+
+                    <div class="dropdown-menu dropdown-menu-end rank-dropdown-menu p-3">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-2">
+                            Цолны систем болон дүрмүүд
+                        </h6>
+                        <ul class="list-unstyled mb-0 small text-secondary">
+                            <li class="py-2 d-flex justify-content-between align-items-center border-bottom border-light">
+                                <span><strong>Анхан суралцагч</strong></span>
+                                <span class="badge bg-light text-dark border">0 Оноо</span>
+                            </li>
+                            <li class="py-2 d-flex justify-content-between align-items-center border-bottom border-light">
+                                <span><strong>Санхүүгийн кадет</strong></span>
+                                <span class="badge bg-warning text-dark">500 Оноо</span>
+                            </li>
+                            <li class="py-2 d-flex justify-content-between align-items-center border-bottom border-light">
+                                <span><strong>Төсвийн мастер</strong></span>
+                                <span class="badge bg-info text-dark">1500 Оноо</span>
+                            </li>
+                            <li class="py-2 d-flex justify-content-between align-items-center">
+                                <span><strong>Санхүүгийн эрх чөлөө</strong></span>
+                                <span class="badge bg-success">5000 Оноо</span>
+                            </li>
+                        </ul>
+                        <div class="bg-light p-2 rounded mt-2 text-center text-muted" style="font-size: 11px;">
+                            <i class="fa-solid fa-circle-info text-primary me-1"></i> Гүйлгээ тэмдэглэж, төсөв тогтоон тэмдэг цуглуулснаар цолоо ахиулах боломжтой!
+                        </div>
+                    </div>
                 </div>
 
                 <div id="user-badges" class="d-flex gap-1 align-items-center"></div>
@@ -72,7 +122,7 @@
                             <label class="form-label small fw-medium text-secondary">Гүйлгээний төрөл</label>
                             <select class="form-select shadow-sm" id="tx-type" required>
                                 <option value="income">Орлого</option>
-                                <option value="expense">Зарлага</option>
+                                <option value="expense" selected>Зарлага</option>
                             </select>
                         </div>
                         

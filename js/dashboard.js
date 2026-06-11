@@ -14,27 +14,27 @@ const budgetCategoryInput = document.getElementById('budget-category');
 const budgetAmountInput = document.getElementById('budget-amount');
 const budgetMonthInput = document.getElementById('budget-month');
 
-// 🏆 Цол, Бонус болон Хөнгөлөлтийн системүүдийн үндсэн дүрэм
+// 🏆 Цол, Бонус болон Хөнгөлөлтийн системүүдийн үндсэн дүрэм (Англи хэл дээр)
 const RANK_RULES = {
     0: {
-        title: "🌱 Анхан суралцагч",
+        title: "Beginner",
         bonus: 0,
-        perks: ["Гүйлгээ тогтмол хөтөлж цолоо ахиулаарай."]
+        perks: ["Keep tracking your transactions to level up!"]
     },
     1: {
-        title: "⚡ Санхүүч Хүү",
+        title: "Financial Cadet",
         bonus: 500,
-        perks: ["☕ CU кофе 10% хөнгөлөлт", "📚 Интерном 5% хөнгөлөлт"]
+        perks: [" CU Coffee 10% OFF", " Internom 5% OFF"]
     },
     2: {
-        title: "🎯 Төсвийн Мастер",
+        title: "Budget Master",
         bonus: 1500,
-        perks: ["☕ CU кофе 20% хөнгөлөлт", "🛒 И-Март 5,000 ₮ купон", "🍿 Тэнгис кино театр 15%"]
+        perks: [" CU Coffee 20% OFF", " E-Mart 5,000 ₮ Coupon", " Tengis Cinema 15% OFF"]
     },
     3: {
-        title: "👑 Санхүүгийн Эрх Чөлөө",
+        title: "Financial Freedom",
         bonus: 5000,
-        perks: ["🌟 Бүх түншүүдэд VIP 15% хөнгөлөлт", "🏦 ХасБанк дансны хураамж 0 ₮"]
+        perks: [" VIP 15% OFF on all partners", " XacBank account fee 0 ₮"]
     }
 };
 
@@ -349,7 +349,7 @@ if (btnLogout) {
         if (!confirmLogout) return;
 
         try {
-            const { error } = await supabase.auth.signOut();
+            const { error } = await supabase.signOut();
             if (error) throw error;
             window.location.href = 'index.html';
         } catch (error) {
@@ -385,11 +385,11 @@ async function fetchAndRenderBadges() {
         let htmlContent = '';
         badges.forEach(b => {
             let badgeColor = 'bg-secondary';
-            let icon = '🏅';
+            let icon = '';
             
-            if (b.badge_name === 'Анхны алхам') { badgeColor = 'bg-warning text-dark'; icon = '🚀'; }
-            if (b.badge_name === 'Төсөвлөгч') { badgeColor = 'bg-info text-dark'; icon = '🎯'; }
-            if (b.badge_name === 'Хэмнэгч') { badgeColor = 'bg-success'; icon = '🛡️'; }
+            if (b.badge_name === 'Анхны алхам') { badgeColor = 'bg-warning text-dark'; icon = ''; }
+            if (b.badge_name === 'Төсөвлөгч') { badgeColor = 'bg-info text-dark'; icon = ''; }
+            if (b.badge_name === 'Хэмнэгч') { badgeColor = 'bg-success'; icon = ''; }
 
             htmlContent += `<span class="badge ${badgeColor} d-flex align-items-center gap-1 shadow-sm" title="${b.badge_name}">${icon} ${b.badge_name}</span>`;
         });
@@ -409,8 +409,9 @@ async function fetchAndRenderBadges() {
         const bonusElem = document.getElementById('user-bonus');
         const discountsContainer = document.getElementById('user-discounts');
 
-        if (rankElem) rankElem.textContent = `👑 ${currentRank.title}`;
-        if (bonusElem) bonusElem.textContent = `${currentRank.bonus.toLocaleString()} Оноо`;
+        // Англи хэл дээр цолыг солих
+        if (rankElem) rankElem.textContent = ` ${currentRank.title}`;
+        if (bonusElem) bonusElem.textContent = `${currentRank.bonus.toLocaleString()} Points`;
 
         if (discountsContainer) {
             let discountsHtml = '';
@@ -424,7 +425,7 @@ async function fetchAndRenderBadges() {
     }
 }
 
-// 2. Шинэ тэмдэг бааз руу нэмэх
+// 2. Шинэ тэмдэг бааз руу нэмэх (awarded_at нэмсэн хувилбар)
 async function awardBadge(badgeName) {
     try {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -449,14 +450,15 @@ async function awardBadge(badgeName) {
                 .insert([
                     { 
                         user_id: user.id, 
-                        badge_name: badgeName 
+                        badge_name: badgeName,
+                        awarded_at: new Date().toISOString() // Баганын Default алдаанаас сэргийлнэ
                     }
                 ]);
             
             if (insertError) {
                 console.error("Бааз руу тэмдэг хадгалахад алдаа гарлаа:", insertError.message);
             } else {
-                alert(`🎉 Баяр хүргэе! Та шинэ урамшууллын тэмдэг авлаа: "${badgeName}"`);
+                alert(`🎉 Congratulations! You've earned a new badge: "${badgeName}"`);
                 await fetchAndRenderBadges();
             }
         }
